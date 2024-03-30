@@ -8,12 +8,12 @@ NAME, GENDER, COUNTRY, OCCURRENCES = 0, 1, 2, 3
 
 class Onomastikon:
 
-    def __init__(self, locale: Optional[str] = None):
+    def __init__(self, locale: Optional[str] = None) -> None:
         self.locale = locale
         self.first_names = self.load_locale("first_names")
         self.last_names = self.load_locale("last_names")
 
-    def load_locale(self, which_file: str):
+    def load_locale(self, which_file: str) -> list:
         data_dir = "data"
         data_file = os.path.join(data_dir, f"{which_file}.csv")
         return_value = []
@@ -27,7 +27,7 @@ class Onomastikon:
 
         return return_value
 
-    def _random_element(self, data, gender, include_weights=True):
+    def _random_element(self, data, gender, include_weights=True) -> Optional[str]:
         filtered = [name for name in data if name[GENDER] == gender]
         if not filtered:
             return None
@@ -36,22 +36,22 @@ class Onomastikon:
             return random.choices(filtered, weights=weights, k=1)[0]
         return random.choice(filtered)
 
-    def random_first_name(self, gender, include_weights=True):
+    def random_first_name(self, gender, include_weights=True) -> Optional[str]:
         # Return a random first name
         _name = self._random_element(self.first_names, gender, include_weights)
         if _name:
             return _name[NAME]
         return None
 
-    def random_last_name(self, gender, include_weights=True):
+    def random_last_name(self, gender, include_weights=True) -> Optional[str]:
         _name = self._random_element(self.last_names, gender, include_weights)
         if _name:
             return _name[NAME]
         return None
 
-    def random_full_name(self, gender, include_weights=True, include_middle_name=False):
+    def random_full_name(self, gender, include_weights=True, include_middle_name=False) -> Optional[str]:
         first_name = self.random_first_name(gender)
-        middle_name = ""
+        middle_name: Optional[str] = ""
         if include_middle_name:
             middle_name = self.random_first_name(gender, include_weights)
         last_name = self.random_last_name(gender)
