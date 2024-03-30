@@ -1,12 +1,13 @@
 [tool.poetry]
 name = "onomastikon"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Marcin Baryłka <marcin.barylka@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
+appdirs = "^1.4.4"
 
 
 [tool.poetry.group.dev.dependencies]
