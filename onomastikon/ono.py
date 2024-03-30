@@ -5,6 +5,10 @@ import os
 import random
 from typing import Optional
 
+import appdirs
+
+from onomastikon.config import get_project_meta
+
 NAME, GENDER, COUNTRY, OCCURRENCES = 0, 1, 2, 3
 
 
@@ -22,8 +26,9 @@ class Onomastikon:
         :param which_file: The file to load
         :return: List of data
         """
-        data_dir = "data"
-        data_file = os.path.join(data_dir, f"{which_file}.csv")
+        _meta = get_project_meta()
+        data_dir = appdirs.user_data_dir(_meta["name"], _meta["authors"][0])
+        data_file = os.path.join(data_dir, "data", f"{which_file}.csv")
         return_value = []
 
         with open(data_file, "r") as f:
