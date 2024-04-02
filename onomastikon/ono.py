@@ -40,45 +40,45 @@ class Onomastikon:
 
         return return_value
 
-    def _random_element(self, data, gender, include_weights=True) -> Optional[str]:
+    def _random_element(self, data, gender, ignore_weights=False) -> Optional[str]:
         """
         Return a random element from the data.
 
         :param data: The data to choose from
         :param gender: The gender to filter by
-        :param include_weights: Include weights in the random choice
+        :param ignore_weights: Ignore weights in the random choice
         :return: A random element
         """
         filtered = [name for name in data if name[GENDER] == gender]
         if not filtered:
             return None
-        if include_weights:
+        if not ignore_weights:
             weights = [int(name[OCCURRENCES]) for name in filtered]
             return random.choices(filtered, weights=weights, k=1)[0]
         return random.choice(filtered)
 
-    def random_first_name(self, gender, include_weights=True) -> Optional[str]:
+    def random_first_name(self, gender, ignore_weights=True) -> Optional[str]:
         """
         Return a random first name.
 
         :param gender: The gender to filter by
-        :param include_weights: Include weights in the random choice
+        :param ignore_weights: Include weights in the random choice
         :return: A random first name
         """
-        _name = self._random_element(self.first_names, gender, include_weights)
+        _name = self._random_element(self.first_names, gender, ignore_weights)
         if _name:
             return _name[NAME]
         return None
 
-    def random_last_name(self, gender, include_weights=True) -> Optional[str]:
+    def random_last_name(self, gender, ignore_weights=True) -> Optional[str]:
         """
         Return a random last name.
 
         :param gender: The gender to filter by
-        :param include_weights: Include weights in the random choice
+        :param ignore_weights: Include weights in the random choice
         :return: A random last name
         """
-        _name = self._random_element(self.last_names, gender, include_weights)
+        _name = self._random_element(self.last_names, gender, ignore_weights)
         if _name:
             return _name[NAME]
         return None
@@ -99,7 +99,7 @@ class Onomastikon:
 
     def random_name(
         self,
-        gender,
+        gender: str,
         include_weights=True,
         second_name_prob: int = 0,
         second_last_name_prob: int = 0,
@@ -107,6 +107,8 @@ class Onomastikon:
         """
         Return a random name.
 
+        :param gender:
+        :type: str
         :param include_weights: Include weights in the random choice
         :type include_weights: bool
         :param second_name_prob: Probability of having a second name (default is 0%)
@@ -118,17 +120,17 @@ class Onomastikon:
         :rtype: str
         """
         first_name = self.random_first_name(
-            include_weights=include_weights, gender=gender
+            ignore_weights=include_weights, gender=gender
         )
         last_name = self.random_last_name(
-            include_weights=include_weights, gender=gender
+            ignore_weights=include_weights, gender=gender
         )
         second_name = None
         second_last_name = None
         if random.randint(1, 100) <= second_name_prob:
-            second_name = f"{self.random_first_name(include_weights=include_weights, gender=gender)}"
+            second_name = f"{self.random_first_name(ignore_weights=include_weights, gender=gender)}"
         if random.randint(1, 100) <= second_last_name_prob:
-            second_last_name = f"{self.random_last_name(include_weights=include_weights, gender=gender)}"
+            second_last_name = f"{self.random_last_name(ignore_weights=include_weights, gender=gender)}"
         result = ""
         if first_name:
             result = first_name
