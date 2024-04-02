@@ -83,24 +83,59 @@ class Onomastikon:
             return _name[NAME]
         return None
 
-    def random_full_name(
-        self, gender, include_weights=True, include_middle_name=False
-    ) -> Optional[str]:
+    def random_full_name(self, gender, include_weights=True) -> Optional[str]:
         """
         Return a random full name.
 
         :param gender: The gender to filter by
         :param include_weights: Include weights in the random choice
-        :param include_middle_name: Include a middle name
         :return: A random full name
         """
         first_name = self.random_first_name(gender)
-        middle_name: Optional[str] = ""
-        if include_middle_name:
-            middle_name = self.random_first_name(gender, include_weights)
         last_name = self.random_last_name(gender)
         if first_name and last_name:
-            if middle_name:
-                return f"{first_name} {middle_name} {last_name}"
             return f"{first_name} {last_name}"
         return None
+
+    def random_name(
+        self,
+        gender,
+        include_weights=True,
+        second_name_prob: int = 0,
+        second_last_name_prob: int = 0,
+    ) -> Optional[str]:
+        """
+        Return a random name.
+
+        :param include_weights: Include weights in the random choice
+        :type include_weights: bool
+        :param second_name_prob: Probability of having a second name (default is 0%)
+        :type second_name_prob: int
+        :param second_last_name_prob: Probability of having a second last name (default is 0%)
+        :type second_last_name_prob: int
+
+        :return: A random name
+        :rtype: str
+        """
+        first_name = self.random_first_name(
+            include_weights=include_weights, gender=gender
+        )
+        last_name = self.random_last_name(
+            include_weights=include_weights, gender=gender
+        )
+        second_name = None
+        second_last_name = None
+        if random.randint(1, 100) <= second_name_prob:
+            second_name = f"{self.random_first_name(include_weights=include_weights, gender=gender)}"
+        if random.randint(1, 100) <= second_last_name_prob:
+            second_last_name = f"{self.random_last_name(include_weights=include_weights, gender=gender)}"
+        result = ""
+        if first_name:
+            result = first_name
+        if second_name:
+            result = f"{result} {second_name}"
+        if last_name:
+            result = f"{result} {last_name}"
+        if second_last_name:
+            result = f"{result}-{second_last_name}"
+        return result
