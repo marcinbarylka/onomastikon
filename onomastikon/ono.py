@@ -7,17 +7,18 @@ from typing import Optional
 
 import appdirs
 
-from onomastikon.config import get_project_meta
+from onomastikon.config import copy_files, get_project_meta
 
 NAME, GENDER, COUNTRY, OCCURRENCES = 0, 1, 2, 3
 
 
 class Onomastikon:
 
-    def __init__(self, locale: Optional[str] = None) -> None:
+    def __init__(self, locale: Optional[str] = None, separate_names: bool = True) -> None:
         self.locale = locale
         self.first_names = self.load_locale("first_names")
         self.last_names = self.load_locale("last_names")
+        self.separate_names = separate_names
 
     def load_locale(self, which_file: str) -> list:
         """
@@ -37,7 +38,6 @@ class Onomastikon:
                 return_value = [row for row in reader if row[2] == self.locale]
             else:
                 return_value = list(reader)
-
         return return_value
 
     def _random_element(self, data, gender, ignore_weights=False) -> Optional[str]:
@@ -103,7 +103,7 @@ class Onomastikon:
         include_weights=True,
         second_name_prob: int = 0,
         second_last_name_prob: int = 0,
-    ) -> Optional[str]:
+    ) -> Optional[str] | dict[str, str| None]:
         """
         Return a random name.
 
@@ -122,22 +122,33 @@ class Onomastikon:
         first_name = self.random_first_name(
             ignore_weights=include_weights, gender=gender
         )
-        last_name = self.random_last_name(
-            ignore_weights=include_weights, gender=gender
-        )
+        last_name = self.random_last_name(ignore_weights=include_weights, gender=gender)
         second_name = None
         second_last_name = None
         if random.randint(1, 100) <= second_name_prob:
             second_name = f"{self.random_first_name(ignore_weights=include_weights, gender=gender)}"
         if random.randint(1, 100) <= second_last_name_prob:
             second_last_name = f"{self.random_last_name(ignore_weights=include_weights, gender=gender)}"
-        result = ""
-        if first_name:
-            result = first_name
-        if second_name:
-            result = f"{result} {second_name}"
-        if last_name:
-            result = f"{result} {last_name}"
-        if second_last_name:
-            result = f"{result}-{second_last_name}"
-        return result
+        if not self.separate_names:
+            result = ""
+            if first_name:
+                result = first_name
+            if second_name:
+                result = f"{result} {second_name}"
+            if last_name:
+                result = f"{result} {last_name}"
+            if second_last_name:
+                result = f"{result}-{second_last_name}"
+            return result
+        return {
+            "first_name": first_name,
+            "second_name": second_name,
+            "last_name": last_name,
+            "second_last_name": second_last_name
+        }
+
+    @staticmethod
+    def force_files_update():
+        """Force the update of the data files."""
+        copy_files()
+        return True
