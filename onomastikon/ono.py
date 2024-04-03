@@ -14,7 +14,9 @@ NAME, GENDER, COUNTRY, OCCURRENCES = 0, 1, 2, 3
 
 class Onomastikon:
 
-    def __init__(self, locale: Optional[str] = None, separate_names: bool = True) -> None:
+    def __init__(
+        self, locale: Optional[str] = None, separate_names: bool = True
+    ) -> None:
         self.locale = locale
         self.first_names = self.load_locale("first_names")
         self.last_names = self.load_locale("last_names")
@@ -83,7 +85,7 @@ class Onomastikon:
             return _name[NAME]
         return None
 
-    def random_full_name(self, gender, include_weights=True) -> Optional[str]:
+    def random_full_name(self, gender, ignore_weights=True) -> Optional[str]:
         """
         Return a random full name.
 
@@ -91,8 +93,8 @@ class Onomastikon:
         :param include_weights: Include weights in the random choice
         :return: A random full name
         """
-        first_name = self.random_first_name(gender)
-        last_name = self.random_last_name(gender)
+        first_name = self.random_first_name(gender, ignore_weights=ignore_weights)
+        last_name = self.random_last_name(gender, ignore_weights=ignore_weights)
         if first_name and last_name:
             return f"{first_name} {last_name}"
         return None
@@ -100,17 +102,17 @@ class Onomastikon:
     def random_name(
         self,
         gender: str,
-        include_weights=True,
+        ignore_weights: bool = True,
         second_name_prob: int = 0,
         second_last_name_prob: int = 0,
-    ) -> Optional[str] | dict[str, str| None]:
+    ) -> Optional[str] | dict[str, str | None]:
         """
         Return a random name.
 
         :param gender:
         :type: str
-        :param include_weights: Include weights in the random choice
-        :type include_weights: bool
+        :param ignore_weights: Include weights in the random choice
+        :type ignore_weights: bool
         :param second_name_prob: Probability of having a second name (default is 0%)
         :type second_name_prob: int
         :param second_last_name_prob: Probability of having a second last name (default is 0%)
@@ -120,15 +122,17 @@ class Onomastikon:
         :rtype: str
         """
         first_name = self.random_first_name(
-            ignore_weights=include_weights, gender=gender
+            ignore_weights=ignore_weights, gender=gender
         )
-        last_name = self.random_last_name(ignore_weights=include_weights, gender=gender)
+        last_name = self.random_last_name(ignore_weights=ignore_weights, gender=gender)
         second_name = None
         second_last_name = None
         if random.randint(1, 100) <= second_name_prob:
-            second_name = f"{self.random_first_name(ignore_weights=include_weights, gender=gender)}"
+            second_name = f"{self.random_first_name(ignore_weights=ignore_weights, gender=gender)}"
         if random.randint(1, 100) <= second_last_name_prob:
-            second_last_name = f"{self.random_last_name(ignore_weights=include_weights, gender=gender)}"
+            second_last_name = (
+                f"{self.random_last_name(ignore_weights=ignore_weights, gender=gender)}"
+            )
         if not self.separate_names:
             result = ""
             if first_name:
@@ -144,7 +148,7 @@ class Onomastikon:
             "first_name": first_name,
             "second_name": second_name,
             "last_name": last_name,
-            "second_last_name": second_last_name
+            "second_last_name": second_last_name,
         }
 
     @staticmethod
