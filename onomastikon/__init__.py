@@ -1,9 +1,10 @@
 """A main module for generating random names."""
 
-from onomastikon.config import copy_files, setup_config_files
+from onomastikon.config import Config
+
 from onomastikon.ono import Onomastikon
 
-setup_config_files()
-copy_files()
+config = Config.instantiate()
+Config.setup_config_files()
 
-__all__ = ["Onomastikon"]
+__all__ = ["Onomastikon", "Config"]

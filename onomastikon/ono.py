@@ -7,7 +7,7 @@ from typing import Optional
 
 import appdirs
 
-from onomastikon.config import copy_files, get_project_meta
+from onomastikon.config import Config
 
 NAME, GENDER, COUNTRY, OCCURRENCES = 0, 1, 2, 3
 
@@ -29,7 +29,7 @@ class Onomastikon:
         :param which_file: The file to load
         :return: List of data
         """
-        _meta = get_project_meta()
+        _meta = Config.get_project_meta()
         data_dir = appdirs.user_data_dir(_meta["name"], _meta["authors"][0])
         data_file = os.path.join(data_dir, "data", f"{which_file}.csv")
         return_value = []
@@ -150,9 +150,3 @@ class Onomastikon:
             "last_name": last_name,
             "second_last_name": second_last_name,
         }
-
-    @staticmethod
-    def force_files_update():
-        """Force the update of the data files."""
-        copy_files()
-        return True
