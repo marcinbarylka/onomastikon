@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 import appdirs
 import toml
+from pony import orm
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -23,7 +24,7 @@ class Config:
     separate_names: bool
     database: str
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._meta = Config.get_project_meta()
         self._local = appdirs.user_data_dir(
             self._meta["name"], self._meta["authors"][0]
@@ -34,7 +35,7 @@ class Config:
         self._config_file = os.path.join(self._config, "config.toml")
 
     @staticmethod
-    def setup_config_files():
+    def setup_config_files() -> None:
         """Create the configuration files."""
         _meta = Config.get_project_meta()
         _local = appdirs.user_data_dir(_meta["name"], _meta["authors"][0])
@@ -114,3 +115,11 @@ class Config:
             config = toml.load(file)
         for key, value in config["onomastikon"].items():
             setattr(self, key, value)
+
+    def create_db_connection(self):
+        """Create the database connection."""
+        db = orm.Database()
+        _database = os.path.join(self._local, "data", self.database)
+        db.bind(provider="sqlite", filename=_database, create_db=True)
+        db.generate_mapping(create_tables=True)
+        return db

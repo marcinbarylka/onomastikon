@@ -7,4 +7,4 @@ from onomastikon.ono import Onomastikon
 config = Config.instantiate()
 Config.setup_config_files()
 
-__all__ = ["Onomastikon", "Config"]
+__all__ = ["Onomastikon", "Config", "config"]
