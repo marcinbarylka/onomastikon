@@ -1,11 +1,17 @@
 """A first run config"""
 
+import csv
+import logging
 import os
 import shutil
-
-import toml
+import sqlite3
 
 import appdirs
+import toml
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 def setup_config_files():
@@ -76,3 +82,54 @@ def copy_files():
         _config_data["onomastikon"]["copied"] = True
         with open(_config_file, "w") as file:
             toml.dump(_config_data, file)
+
+
+def make_base():
+    """Create SQLite database and tables."""
+
+    _meta = get_project_meta()
+    _local = appdirs.user_data_dir(_meta["name"], _meta["authors"][0])
+    database_file = os.path.join(_local, "data", "data.sqlite")
+    files = os.listdir("data")
+
+    for file in files:
+        if file.endswith(".csv"):
+            table_name = os.path.splitext(file)[0]
+            with open(f"data/{file}", "r") as f:
+                csv_reader = csv.reader(f)
+                headers = next(csv_reader)
+                with sqlite3.connect(database_file) as conn:
+                    cursor = conn.cursor()
+                    try:
+                        sql = f"CREATE TABLE IF NOT EXISTS {table_name} ({', '.join(headers)});"
+                        cursor.execute(sql)
+                        logging.info(f"Table {table_name} created: {sql}")
+                        conn.commit()
+                    except sqlite3.OperationalError as e:
+                        logging.error(f"Error creating table {table_name}. {e}, {sql}")
+
+                rows = []
+                try:
+                    for row in csv_reader:
+                        rows.append(row)
+                        if len(rows) == 1000:
+                            with sqlite3.connect(database_file) as conn:
+                                cursor = conn.cursor()
+                                sql = f"INSERT INTO {table_name} VALUES ({', '.join('?' * len(rows[0]))});"
+                                logging.info(
+                                    f"Inserting 1000 rows into {table_name}. {sql}"
+                                )
+                                cursor.executemany(sql, rows)
+                                conn.commit()
+                            rows = []
+                    if rows:
+                        sql = f"INSERT INTO {table_name} VALUES ({', '.join('?' * len(rows[0]))});"
+                        logging.info(
+                            f"Inserting remaining rows into {table_name}. {sql}"
+                        )
+                        with sqlite3.connect(database_file) as conn:
+                            cursor = conn.cursor()
+                            cursor.executemany(sql, rows)
+                            conn.commit()
+                except sqlite3.OperationalError as e:
+                    logging.error(f"Error inserting rows into {table_name}. {e}")
